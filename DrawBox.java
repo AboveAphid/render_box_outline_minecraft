@@ -1,5 +1,5 @@
 // Reference: https://discord.com/channels/507304429255393322/807617488313516032/1302046276090859664
-// The Fabric Project - baktus_79 - 11/02/2024
+// The Fabric Project - baktus_79 - 11/2/24
 
 package github.aboveaphid.taskswithbots;
 
@@ -15,6 +15,8 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL11;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,26 +27,27 @@ public class DrawBox {
     public static void initialize(MatrixStack matrixStack, MinecraftClient client) {
         if (client.world == null || client.player == null || blocks.isEmpty()) return;
 
-        final Camera camera = client.gameRenderer.getCamera();
-        final Vec3d cameraPos = camera.getPos();
-        final Tessellator tessellator = Tessellator.getInstance();
-        final BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR); // (DrawMod.LINE does not work)
 
+        Camera camera = client.gameRenderer.getCamera();
+        Vec3d cameraPos = camera.getPos();
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR); // (DrawMod.LINE does not work)
         matrixStack.push();
 
         final Matrix4f matrix = matrixStack.peek().getPositionMatrix();
 
 
         // OLD FOR VERSIONS LESS THAN 1.21.2: RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+//        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
         RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
 
         for (Map.Entry<BlockPos, Integer> s : blocks.entrySet()) {
-            final BlockPos blockPos = s.getKey();
-            final int color = s.getValue();
-            final double x = blockPos.getX() - cameraPos.x;
-            final double y = blockPos.getY() - cameraPos.y;
-            final double z = blockPos.getZ() - cameraPos.z;
-            final Box bb = new Box(x, y, z, x + 1, y + 1, z + 1);
+            BlockPos blockPos = s.getKey();
+            int color = s.getValue();
+            double x = blockPos.getX() - cameraPos.x;
+            double y = blockPos.getY() - cameraPos.y;
+            double z = blockPos.getZ() - cameraPos.z;
+            Box bb = new Box(x, y, z, x + 1, y + 1, z + 1);
             drawOutlineBox(matrix, bufferBuilder, bb, color);
         }
 
@@ -76,6 +79,7 @@ public class DrawBox {
     }
 
     private static void drawLine(BufferBuilder bufferBuilder, Matrix4f matrix, double x1, double y1, double z1, double x2, double y2, double z2, int color, Vector3f normal) {
+        bufferBuilder.normal(normal.x, normal.y, normal.z);
         bufferBuilder.vertex(matrix, (float) x1, (float) y1, (float) z1).color(color);
         bufferBuilder.vertex(matrix, (float) x2, (float) y2, (float) z2).color(color);
     }
@@ -87,4 +91,5 @@ public class DrawBox {
     public static void removeBlock(BlockPos blockPos) {
         blocks.remove(blockPos);
     }
+
 }
